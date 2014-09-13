@@ -1,0 +1,28 @@
+{
+	"name": "adat",
+	"version": "1.0.0",
+	"homepage": "https://github.com/andraaspar/adat",
+	"authors": [
+		"András Parditka"
+	],
+	"description": "Indexed DB helper classes in TypeScript.",
+	"keywords": [
+		"TypeScript",
+		"IndexedDB",
+		"helper"
+	],
+	"license": "MIT",
+	"ignore": [
+		"**/.*",
+		"build",
+		"lib",
+		"node_modules",
+		"bower_components",
+		"test",
+		"Gruntfile.js",
+		"package.json"
+	],
+	"dependencies": {
+		"berek": "andraaspar/berek#v1.2"
+	}
+}
