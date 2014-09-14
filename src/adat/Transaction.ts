@@ -36,7 +36,9 @@ module adat {
 			
 			for (var i = 0, n = this.requests.length; i < n; i++) {
 				var request = this.requests[i];
-				var objectStoreName = this.database.getCurrentVersionDescriptor().getObjectStoreName(request.getObjectStoreDescriptor());
+				var objectStoreName = illa.ObjectUtil.getKeyOfValue(
+					this.database.getCurrentVersionDescriptor().getObjectStoreDescriptors(),
+					request.getObjectStoreDescriptor());
 				request.process(this.transaction.objectStore(objectStoreName));
 			}
 		}
@@ -49,7 +51,7 @@ module adat {
 				var osd = this.requests[i].getObjectStoreDescriptor();
 				if (illa.ArrayUtil.indexOf(osds, osd) == -1) {
 					osds.push(osd);
-					result.push(this.database.getCurrentVersionDescriptor().getObjectStoreName(osd));
+					result.push(illa.ObjectUtil.getKeyOfValue(this.database.getCurrentVersionDescriptor().getObjectStoreDescriptors(), osd));
 				}
 			}
 			

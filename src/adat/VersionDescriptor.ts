@@ -25,17 +25,6 @@ module adat {
 			}
 		}
 		
-		getObjectStoreName(osd: ObjectStoreDescriptor<any, any>): string {
-			for (var name in this.objectStoreDescriptors) {
-				if (this.objectStoreDescriptors.hasOwnProperty(name)) {
-					if (osd === this.objectStoreDescriptors[name]) {
-						return name;
-					}
-				}
-			}
-			return '';
-		}
-		
 		getObjectStoreDescriptors() { return this.objectStoreDescriptors }
 	}
 }

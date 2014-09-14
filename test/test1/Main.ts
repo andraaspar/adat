@@ -36,7 +36,7 @@ module test1 {
 				
 				var addValues = new adat.Transaction(this.db, [
 					new adat.RequestAdd(this.someValues, new SomeValue()).setName('addAValue'),
-					new adat.RequestCursor(this.someValues, illa.bind(this.onSomeValuesRetrieved, this), illa.GLOBAL.IDBKeyRange.bound(3, 5)).setName('readAllValues')
+					new adat.RequestCursor(this.someValues, illa.bind(this.onSomeValuesRetrieved, this), adat.Database.getIDBKeyRange().bound(3, 5)).setName('readAllValues')
 				]).setName('addValues').process();
 			}
 		}

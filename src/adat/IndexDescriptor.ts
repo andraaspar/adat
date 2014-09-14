@@ -3,22 +3,16 @@
 module adat {
 	export class IndexDescriptor {
 	
-		private index: IDBIndex;
-		
 		constructor(private keyPath: string, private isUnique = false, private isMultiEntry = false) {
 			
 		}
 		
 		applyTo(objectStore: IDBObjectStore, name: string, prev: IndexDescriptor): void {
-			if (this.getEquals(prev)) {
-			
-				this.index = prev.getIndex();
-				
-			} else {
+			if (!this.getEquals(prev)) {
 				if (prev) {
 					this.removeFrom(objectStore, name);
 				}
-				this.index = objectStore.createIndex(name, this.getKeyPath(), {unique: this.getIsUnique(), multiEntry: this.getIsMultiEntry()});
+				objectStore.createIndex(name, this.getKeyPath(), {unique: this.getIsUnique(), multiEntry: this.getIsMultiEntry()});
 			}
 		}
 		
@@ -43,6 +37,5 @@ module adat {
 		getKeyPath() { return this.keyPath }
 		getIsUnique() { return this.isUnique }
 		getIsMultiEntry() { return this.isMultiEntry }
-		getIndex() { return this.index }
 	}
 }

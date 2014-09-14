@@ -119,6 +119,13 @@ module adat {
 			}
 		}
 		
+		/**
+		 * Helper for TypeScript 1.0.1, which has incorrect definition of IDBKeyRange.
+		 */
+		static getIDBKeyRange(): IDBKeyRange {
+			return illa.GLOBAL.IDBKeyRange;
+		}
+		
 		getName() { return this.name }
 		getVersionDescriptors() { return this.versionDescriptors }
 		getVersionDescriptor(version: number) { return this.versionDescriptors[version - 1] }
