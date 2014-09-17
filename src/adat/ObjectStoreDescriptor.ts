@@ -5,11 +5,11 @@
 module adat {
 	export class ObjectStoreDescriptor<K, V> {
 	
-		constructor(private keyPath = '', private autoIncrement = false, private indexDescriptors: {[s: string]: IndexDescriptor} = {}) {
+		constructor(private keyPath = '', private autoIncrement = false, private indexDescriptors: {[s: string]: IndexDescriptor<any, V>} = {}) {
 			
 		}
 		
-		applyTo(transaction: IDBTransaction, database: IDBDatabase, name: string, prev: ObjectStoreDescriptor<K, V>): void {
+		applyTo(transaction: IDBTransaction, database: IDBDatabase, name: string, prev: ObjectStoreDescriptor<any, any>): void {
 			if (prev && !this.getPropertiesEqual(prev)) {
 			
 				var objectStore = transaction.objectStore(name);
@@ -30,7 +30,7 @@ module adat {
 			database.deleteObjectStore(name);
 		}
 		
-		getPropertiesEqual(other: ObjectStoreDescriptor<K, V>): boolean {
+		getPropertiesEqual(other: ObjectStoreDescriptor<any, any>): boolean {
 			var result = false;
 			
 			if (other instanceof ObjectStoreDescriptor &&
@@ -43,11 +43,11 @@ module adat {
 			return result;
 		}
 		
-		applyIndexDescriptors(objectStore: IDBObjectStore, prev: ObjectStoreDescriptor<K, V>): void {
+		applyIndexDescriptors(objectStore: IDBObjectStore, prev: ObjectStoreDescriptor<any, any>): void {
 			for (var key in this.indexDescriptors) {
 				if (this.indexDescriptors.hasOwnProperty(key)) {
 					var newIndexD = this.indexDescriptors[key];
-					var prevIndexD: IndexDescriptor = null;
+					var prevIndexD: IndexDescriptor<any, any> = null;
 					
 					if (prev && prev.indexDescriptors.hasOwnProperty(key)) {
 						prevIndexD = prev.indexDescriptors[key];

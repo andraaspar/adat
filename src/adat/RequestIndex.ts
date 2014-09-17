@@ -3,9 +3,9 @@
 /// <reference path='Request.ts'/>
 
 module adat {
-	export class RequestIndex<K, V, IK> extends Request<K, V> {
+	export class RequestIndex<K, V> extends Request<any, V> {
 	
-		constructor(objectStoreDescriptor: ObjectStoreDescriptor<K, V>, private indexDescriptor: IndexDescriptor) {
+		constructor(objectStoreDescriptor: ObjectStoreDescriptor<any, V>, private indexDescriptor: IndexDescriptor<K, V>) {
 			super(objectStoreDescriptor);
 		}
 		

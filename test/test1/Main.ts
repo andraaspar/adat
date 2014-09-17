@@ -18,7 +18,7 @@ module test1 {
 		
 		private db: adat.Database;
 		private someValues: adat.ObjectStoreDescriptor<number, SomeValue>;
-		private someValuesTimeIndex: adat.IndexDescriptor;
+		private someValuesTimeIndex: adat.IndexDescriptor<number, SomeValue>;
 		
 		constructor() {
 			jquery.$(illa.bind(this.onDOMLoaded, this));
@@ -28,8 +28,8 @@ module test1 {
 			if (adat.Database.isSupported()) {
 				this.db = new adat.Database('adat-test', [
 					new adat.VersionDescriptor({
-						someValues: this.someValues = new adat.ObjectStoreDescriptor('id', true, {
-							time: this.someValuesTimeIndex = new adat.IndexDescriptor('time', true)
+						someValues: this.someValues = new adat.ObjectStoreDescriptor<number, SomeValue>('id', true, {
+							time: this.someValuesTimeIndex = new adat.IndexDescriptor<number, SomeValue>('time', true)
 						})
 					})
 				]);

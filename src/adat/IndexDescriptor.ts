@@ -1,13 +1,13 @@
 
 
 module adat {
-	export class IndexDescriptor {
+	export class IndexDescriptor<K, V> {
 	
 		constructor(private keyPath: string, private isUnique = false, private isMultiEntry = false) {
 			
 		}
 		
-		applyTo(objectStore: IDBObjectStore, name: string, prev: IndexDescriptor): void {
+		applyTo(objectStore: IDBObjectStore, name: string, prev: IndexDescriptor<any, any>): void {
 			if (!this.getEquals(prev)) {
 				if (prev) {
 					this.removeFrom(objectStore, name);
@@ -20,7 +20,7 @@ module adat {
 			objectStore.deleteIndex(name);
 		}
 		
-		getEquals(other: IndexDescriptor): boolean {
+		getEquals(other: IndexDescriptor<any, any>): boolean {
 			var result = false;
 			
 			if (other instanceof IndexDescriptor &&
