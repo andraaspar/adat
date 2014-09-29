@@ -1,7 +1,7 @@
 /// <reference path='../../lib/illa/_module.ts'/>
 /// <reference path='../../lib/illa/Log.ts'/>
 
-/// <reference path='../../lib/berek/jquery/_module.ts'/>
+/// <reference path='../../lib/jQuery.d.ts'/>
 
 /// <reference path='../../src/adat/Transaction.ts'/>
 /// <reference path='../../src/adat/RequestAdd.ts'/>
@@ -10,7 +10,6 @@
 /// <reference path='SomeValue.ts'/>
 
 module test1 {
-	import jquery = berek.jquery;
 	
 	export class Main {
 		
@@ -21,7 +20,7 @@ module test1 {
 		private someValuesTimeIndex: adat.IndexDescriptor<number, SomeValue>;
 		
 		constructor() {
-			jquery.$(illa.bind(this.onDOMLoaded, this));
+			jQuery(illa.bind(this.onDOMLoaded, this));
 		}
 		
 		onDOMLoaded() {
@@ -42,10 +41,12 @@ module test1 {
 		}
 		
 		onSomeValuesRetrieved(values: SomeValue[]): void {
+			illa.Log.info('Values retrieved...');
 			for (var i = 0; i < values.length; i++) {
 				var value = values[i];
 				illa.Log.info('Value', 'id:', value.id, 'time:', value.time, 'timeString:', value.timeString);
 			}
+			illa.Log.info('End of retrieved values.');
 		}
 	}
 }

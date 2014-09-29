@@ -90,8 +90,21 @@ var illa;
     }
     illa.bind = bind;
 
+    function partial(fn, obj) {
+        var args = [];
+        for (var _i = 0; _i < (arguments.length - 2); _i++) {
+            args[_i] = arguments[_i + 2];
+        }
+        if (!fn)
+            throw 'No function.';
+        return function () {
+            return fn.apply(obj, args.concat(Array.prototype.slice.call(arguments)));
+        };
+    }
+    illa.partial = partial;
+
     if (Function.prototype.bind) {
-        illa.bind = function (fn, obj) {
+        illa.bind = illa.partial = function (fn, obj) {
             return fn.call.apply(fn.bind, arguments);
         };
     }
@@ -203,13 +216,6 @@ var illa;
     })();
     illa.Log = Log;
 })(illa || (illa = {}));
-var berek;
-(function (berek) {
-    (function (jquery) {
-        jquery.$ = window['jQuery'];
-    })(berek.jquery || (berek.jquery = {}));
-    var jquery = berek.jquery;
-})(berek || (berek = {}));
 var illa;
 (function (illa) {
     var EventCallbackReg = (function () {
@@ -342,6 +348,25 @@ var illa;
             }
             return result;
         };
+
+        ObjectUtil.getKeyOfValue = function (obj, value) {
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key) && obj[key] === value) {
+                    return key;
+                }
+            }
+            return '';
+        };
+
+        ObjectUtil.getKeysOfValue = function (obj, value) {
+            var result = [];
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key) && obj[key] === value) {
+                    result.push(key);
+                }
+            }
+            return result;
+        };
         return ObjectUtil;
     })();
     illa.ObjectUtil = ObjectUtil;
@@ -357,13 +382,11 @@ var adat;
             this.isMultiEntry = isMultiEntry;
         }
         IndexDescriptor.prototype.applyTo = function (objectStore, name, prev) {
-            if (this.getEquals(prev)) {
-                this.index = prev.getIndex();
-            } else {
+            if (!this.getEquals(prev)) {
                 if (prev) {
                     this.removeFrom(objectStore, name);
                 }
-                this.index = objectStore.createIndex(name, this.getKeyPath(), { unique: this.getIsUnique(), multiEntry: this.getIsMultiEntry() });
+                objectStore.createIndex(name, this.getKeyPath(), { unique: this.getIsUnique(), multiEntry: this.getIsMultiEntry() });
             }
         };
 
@@ -389,9 +412,6 @@ var adat;
         };
         IndexDescriptor.prototype.getIsMultiEntry = function () {
             return this.isMultiEntry;
-        };
-        IndexDescriptor.prototype.getIndex = function () {
-            return this.index;
         };
         return IndexDescriptor;
     })();
@@ -499,17 +519,6 @@ var adat;
                     }
                 }
             }
-        };
-
-        VersionDescriptor.prototype.getObjectStoreName = function (osd) {
-            for (var name in this.objectStoreDescriptors) {
-                if (this.objectStoreDescriptors.hasOwnProperty(name)) {
-                    if (osd === this.objectStoreDescriptors[name]) {
-                        return name;
-                    }
-                }
-            }
-            return '';
         };
 
         VersionDescriptor.prototype.getObjectStoreDescriptors = function () {
@@ -633,6 +642,10 @@ var adat;
             }
         };
 
+        Database.getIDBKeyRange = function () {
+            return illa.GLOBAL.IDBKeyRange;
+        };
+
         Database.prototype.getName = function () {
             return this.name;
         };
@@ -654,12 +667,12 @@ var adat;
         Database.prototype.getIsOpen = function () {
             return this.isOpen;
         };
-        Database.EVENT_BLOCKED = 'idb_Database_EVENT_BLOCKED';
-        Database.EVENT_NOT_SUPPORTED = 'idb_Database_EVENT_NOT_SUPPORTED';
-        Database.EVENT_OPEN_ERROR = 'idb_Database_EVENT_OPEN_ERROR';
-        Database.EVENT_OPEN_SUCCESS = 'idb_Database_EVENT_OPEN_SUCCESS';
-        Database.EVENT_ERROR = 'idb_Database_EVENT_ERROR';
-        Database.EVENT_ABORT = 'idb_Database_EVENT_ABORT';
+        Database.EVENT_BLOCKED = 'adat_Database_EVENT_BLOCKED';
+        Database.EVENT_NOT_SUPPORTED = 'adat_Database_EVENT_NOT_SUPPORTED';
+        Database.EVENT_OPEN_ERROR = 'adat_Database_EVENT_OPEN_ERROR';
+        Database.EVENT_OPEN_SUCCESS = 'adat_Database_EVENT_OPEN_SUCCESS';
+        Database.EVENT_ERROR = 'adat_Database_EVENT_ERROR';
+        Database.EVENT_ABORT = 'adat_Database_EVENT_ABORT';
         return Database;
     })(illa.EventHandler);
     adat.Database = Database;
@@ -776,7 +789,7 @@ var adat;
         Request.prototype.getRequest = function (id) {
             return this.requests[id];
         };
-        Request.EVENT_SUCCESS = 'idb_Request_EVENT_SUCCESS';
+        Request.EVENT_SUCCESS = 'adat_Request_EVENT_SUCCESS';
         return Request;
     })(illa.EventHandler);
     adat.Request = Request;
@@ -809,7 +822,7 @@ var adat;
 
             for (var i = 0, n = this.requests.length; i < n; i++) {
                 var request = this.requests[i];
-                var objectStoreName = this.database.getCurrentVersionDescriptor().getObjectStoreName(request.getObjectStoreDescriptor());
+                var objectStoreName = illa.ObjectUtil.getKeyOfValue(this.database.getCurrentVersionDescriptor().getObjectStoreDescriptors(), request.getObjectStoreDescriptor());
                 request.process(this.transaction.objectStore(objectStoreName));
             }
         };
@@ -822,7 +835,7 @@ var adat;
                 var osd = this.requests[i].getObjectStoreDescriptor();
                 if (illa.ArrayUtil.indexOf(osds, osd) == -1) {
                     osds.push(osd);
-                    result.push(this.database.getCurrentVersionDescriptor().getObjectStoreName(osd));
+                    result.push(illa.ObjectUtil.getKeyOfValue(this.database.getCurrentVersionDescriptor().getObjectStoreDescriptors(), osd));
                 }
             }
 
@@ -885,9 +898,9 @@ var adat;
         Transaction.prototype.getName = function () {
             return this.name;
         };
-        Transaction.EVENT_ABORT = 'idb_Transaction_EVENT_ABORT';
-        Transaction.EVENT_ERROR = 'idb_Transaction_EVENT_ERROR';
-        Transaction.EVENT_COMPLETE = 'idb_Transaction_EVENT_COMPLETE';
+        Transaction.EVENT_ABORT = 'adat_Transaction_EVENT_ABORT';
+        Transaction.EVENT_ERROR = 'adat_Transaction_EVENT_ERROR';
+        Transaction.EVENT_COMPLETE = 'adat_Transaction_EVENT_COMPLETE';
         return Transaction;
     })(illa.EventHandler);
     adat.Transaction = Transaction;
@@ -942,9 +955,11 @@ var adat;
         };
 
         RequestCursor.prototype.onSuccess = function (e) {
-            var cursor = this.getRequest(0).result;
+            var cursor = e.target.result;
             if (cursor) {
-                this.result.push(cursor.value);
+                if (illa.isUndefinedOrNull(this.resultFilter) || this.resultFilter(cursor.key, cursor.value)) {
+                    this.result.push(cursor.value);
+                }
                 cursor.continue();
             } else {
                 _super.prototype.onSuccess.call(this, e);
@@ -957,6 +972,13 @@ var adat;
         };
         RequestCursor.prototype.getMode = function () {
             return 0 /* READONLY */;
+        };
+        RequestCursor.prototype.getResultFilter = function () {
+            return this.resultFilter;
+        };
+        RequestCursor.prototype.setResultFilter = function (value) {
+            this.resultFilter = value;
+            return this;
         };
         return RequestCursor;
     })(adat.Request);
@@ -975,11 +997,9 @@ var test1;
 })(test1 || (test1 = {}));
 var test1;
 (function (test1) {
-    var jquery = berek.jquery;
-
     var Main = (function () {
         function Main() {
-            jquery.$(illa.bind(this.onDOMLoaded, this));
+            jQuery(illa.bind(this.onDOMLoaded, this));
         }
         Main.prototype.onDOMLoaded = function () {
             if (adat.Database.isSupported()) {
@@ -993,16 +1013,18 @@ var test1;
 
                 var addValues = new adat.Transaction(this.db, [
                     new adat.RequestAdd(this.someValues, new test1.SomeValue()).setName('addAValue'),
-                    new adat.RequestCursor(this.someValues, illa.bind(this.onSomeValuesRetrieved, this), illa.GLOBAL.IDBKeyRange.bound(3, 5)).setName('readAllValues')
+                    new adat.RequestCursor(this.someValues, illa.bind(this.onSomeValuesRetrieved, this), adat.Database.getIDBKeyRange().bound(3, 5)).setName('readAllValues')
                 ]).setName('addValues').process();
             }
         };
 
         Main.prototype.onSomeValuesRetrieved = function (values) {
+            illa.Log.info('Values retrieved...');
             for (var i = 0; i < values.length; i++) {
                 var value = values[i];
                 illa.Log.info('Value', 'id:', value.id, 'time:', value.time, 'timeString:', value.timeString);
             }
+            illa.Log.info('End of retrieved values.');
         };
         Main.instance = new Main();
         return Main;
