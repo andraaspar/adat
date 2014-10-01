@@ -23,6 +23,9 @@
 		"package.json"
 	],
 	"dependencies": {
+		"illa": "andraaspar/illa#v2.1"
+	},
+	"devDependencies": {
 		"berek": "andraaspar/berek#v1.3"
 	}
 }
