@@ -14,7 +14,7 @@ module adat {
 		private transaction: IDBTransaction;
 		private name = '';
 		
-		constructor(private database: Database, private requests: Request<any, any>[]) {
+		constructor(private database: Database, private requests: Request<any, any>[], private mode?: TransactionMode) {
 			super();
 		}
 		
@@ -29,10 +29,12 @@ module adat {
 		}
 		
 		processInternal(): void {
-			this.transaction = this.database.getIDBDatabase().transaction(this.getObjectStoreNames(), Transaction.getModeValue(this.getMode()));
-			this.transaction.onabort = illa.bind(this.onAbort, this);
-			this.transaction.onerror = illa.bind(this.onError, this);
-			this.transaction.oncomplete = illa.bind(this.onComplete, this);
+			if (!this.transaction) {
+				this.transaction = this.database.getIDBDatabase().transaction(this.getObjectStoreNames(), Transaction.getModeValue(this.getMode()));
+				this.transaction.onabort = illa.bind(this.onAbort, this);
+				this.transaction.onerror = illa.bind(this.onError, this);
+				this.transaction.oncomplete = illa.bind(this.onComplete, this);
+			}
 			
 			for (var i = 0, n = this.requests.length; i < n; i++) {
 				var request = this.requests[i];
@@ -59,6 +61,14 @@ module adat {
 		}
 		
 		getMode(): TransactionMode {
+			if (illa.isUndefinedOrNull(this.mode)) {
+				return this.getModeFromRequests();
+			} else {
+				return this.mode;
+			}
+		}
+		
+		getModeFromRequests(): TransactionMode {
 			var result = TransactionMode.READONLY;
 			for (var i = 0, n = this.requests.length; i < n; i++) {
 				var mode = this.requests[i].getMode();
@@ -100,6 +110,7 @@ module adat {
 		
 		getDatabase() { return this.database }
 		getRequests() { return this.requests }
+		setRequests(value: Request<any, any>[]): Transaction { this.requests = value; return this }
 		getIDBTransaction() { return this.transaction }
 		setName(value: string): Transaction { this.name = value; return this }
 		getName() { return this.name }
