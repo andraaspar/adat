@@ -798,10 +798,11 @@ var adat;
 (function (adat) {
     var Transaction = (function (_super) {
         __extends(Transaction, _super);
-        function Transaction(database, requests) {
+        function Transaction(database, requests, mode) {
             _super.call(this);
             this.database = database;
             this.requests = requests;
+            this.mode = mode;
             this.name = '';
         }
         Transaction.prototype.process = function () {
@@ -815,10 +816,12 @@ var adat;
         };
 
         Transaction.prototype.processInternal = function () {
-            this.transaction = this.database.getIDBDatabase().transaction(this.getObjectStoreNames(), Transaction.getModeValue(this.getMode()));
-            this.transaction.onabort = illa.bind(this.onAbort, this);
-            this.transaction.onerror = illa.bind(this.onError, this);
-            this.transaction.oncomplete = illa.bind(this.onComplete, this);
+            if (!this.transaction) {
+                this.transaction = this.database.getIDBDatabase().transaction(this.getObjectStoreNames(), Transaction.getModeValue(this.getMode()));
+                this.transaction.onabort = illa.bind(this.onAbort, this);
+                this.transaction.onerror = illa.bind(this.onError, this);
+                this.transaction.oncomplete = illa.bind(this.onComplete, this);
+            }
 
             for (var i = 0, n = this.requests.length; i < n; i++) {
                 var request = this.requests[i];
@@ -843,6 +846,14 @@ var adat;
         };
 
         Transaction.prototype.getMode = function () {
+            if (illa.isUndefinedOrNull(this.mode)) {
+                return this.getModeFromRequests();
+            } else {
+                return this.mode;
+            }
+        };
+
+        Transaction.prototype.getModeFromRequests = function () {
             var result = 0 /* READONLY */;
             for (var i = 0, n = this.requests.length; i < n; i++) {
                 var mode = this.requests[i].getMode();
@@ -887,6 +898,10 @@ var adat;
         };
         Transaction.prototype.getRequests = function () {
             return this.requests;
+        };
+        Transaction.prototype.setRequests = function (value) {
+            this.requests = value;
+            return this;
         };
         Transaction.prototype.getIDBTransaction = function () {
             return this.transaction;
