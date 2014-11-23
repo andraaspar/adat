@@ -1,9 +1,12 @@
 var illa;
 (function (illa) {
+    /**
+     * A reference to the global object.
+     * This is the window in a browser, and the global in node.
+     */
     illa.GLOBAL = (function () {
         return this;
     })();
-
     illa.classByType = (function () {
         var classes = 'Boolean Number String Function Array Date RegExp Object Error'.split(' ');
         var result = {};
@@ -12,61 +15,82 @@ var illa;
         }
         return result;
     })();
-
+    /**
+     * Returns true if the value is a string primitive.
+     */
     function isString(v) {
         return typeof v == 'string';
     }
     illa.isString = isString;
-
+    /**
+     * Returns true if the value is a boolean primitive.
+     */
     function isBoolean(v) {
         return typeof v == 'boolean';
     }
     illa.isBoolean = isBoolean;
-
+    /**
+     * Returns true if the value is a number primitive.
+     */
     function isNumber(v) {
         return typeof v == 'number';
     }
     illa.isNumber = isNumber;
-
+    /**
+     * Returns true if the value is a function.
+     */
     function isFunction(v) {
         return typeof v == 'function';
     }
     illa.isFunction = isFunction;
-
+    /**
+     * Returns true if the value is an array.
+     * Array subclasses are not recognized as arrays.
+     */
     function isArray(v) {
         return illa.getType(v) == 'array';
     }
     illa.isArray = isArray;
-
     if (Array.isArray)
         illa.isArray = Array.isArray;
-
+    /**
+     * Returns true if the value is undefined.
+     */
     function isUndefined(v) {
         return typeof v == 'undefined';
     }
     illa.isUndefined = isUndefined;
-
+    /**
+     * Returns true if the value is null.
+     */
     function isNull(v) {
         return v === null;
     }
     illa.isNull = isNull;
-
+    /**
+     * Returns true if the value is undefined or null.
+     */
     function isUndefinedOrNull(v) {
         return typeof v == 'undefined' || v === null;
     }
     illa.isUndefinedOrNull = isUndefinedOrNull;
-
+    /**
+     * Returns true if the value is an object and not null. Includes functions.
+     */
     function isObjectNotNull(v) {
         var t = typeof v;
         return t == 'object' && v !== null || t == 'function';
     }
     illa.isObjectNotNull = isObjectNotNull;
-
+    /**
+     * Returns the type of value.
+     */
     function getType(v) {
         var result = '';
         if (v == null) {
             result = v + '';
-        } else {
+        }
+        else {
             result = typeof v;
             if (result == 'object' || result == 'function') {
                 result = illa.classByType[illa.classByType.toString.call(v)] || 'object';
@@ -75,25 +99,17 @@ var illa;
         return result;
     }
     illa.getType = getType;
-
+    /**
+     * Returns the value if ‘instanceof’ is true for the given constructor.
+     */
     function as(c, v) {
         return v instanceof c ? v : null;
     }
     illa.as = as;
-
     function bind(fn, obj) {
-        if (!fn)
-            throw 'No function.';
-        return function () {
-            return fn.apply(obj, arguments);
-        };
-    }
-    illa.bind = bind;
-
-    function partial(fn, obj) {
         var args = [];
-        for (var _i = 0; _i < (arguments.length - 2); _i++) {
-            args[_i] = arguments[_i + 2];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
         }
         if (!fn)
             throw 'No function.';
@@ -101,14 +117,26 @@ var illa;
             return fn.apply(obj, args.concat(Array.prototype.slice.call(arguments)));
         };
     }
-    illa.partial = partial;
-
+    illa.bind = bind;
+    /**
+     * Binds a function to a ‘this’ context, and also prepends the specified arguments.
+     * This is not type safe.
+     */
+    function bindUnsafe(fn, obj) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        return illa.bind.call(this, arguments);
+    }
+    illa.bindUnsafe = bindUnsafe;
     if (Function.prototype.bind) {
-        illa.bind = illa.partial = function (fn, obj) {
+        illa.bind = illa.bindUnsafe = function (fn) {
             return fn.call.apply(fn.bind, arguments);
         };
     }
 })(illa || (illa = {}));
+/// <reference path='_module.ts'/>
 var illa;
 (function (illa) {
     var Log = (function () {
@@ -116,70 +144,77 @@ var illa;
         }
         Log.log = function () {
             var args = [];
-            for (var _i = 0; _i < (arguments.length - 0); _i++) {
-                args[_i] = arguments[_i + 0];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
             }
             var console = illa.GLOBAL.console;
             if (console && console.log) {
                 if (console.log.apply) {
                     console.log.apply(console, args);
-                } else {
+                }
+                else {
                     console.log(args.join(' '));
                 }
             }
         };
         Log.info = function () {
             var args = [];
-            for (var _i = 0; _i < (arguments.length - 0); _i++) {
-                args[_i] = arguments[_i + 0];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
             }
             var console = illa.GLOBAL.console;
             if (console && console.info) {
                 if (console.info.apply) {
                     console.info.apply(console, args);
-                } else {
+                }
+                else {
                     console.info(args.join(' '));
                 }
-            } else {
+            }
+            else {
                 Log.log.apply(this, args);
             }
         };
         Log.warn = function () {
             var args = [];
-            for (var _i = 0; _i < (arguments.length - 0); _i++) {
-                args[_i] = arguments[_i + 0];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
             }
             var console = illa.GLOBAL.console;
             if (console && console.warn) {
                 if (console.warn.apply) {
                     console.warn.apply(console, args);
-                } else {
+                }
+                else {
                     console.warn(args.join(' '));
                 }
-            } else {
+            }
+            else {
                 Log.log.apply(this, args);
             }
         };
         Log.error = function () {
             var args = [];
-            for (var _i = 0; _i < (arguments.length - 0); _i++) {
-                args[_i] = arguments[_i + 0];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
             }
             var console = illa.GLOBAL.console;
             if (console && console.error) {
                 if (console.error.apply) {
                     console.error.apply(console, args);
-                } else {
+                }
+                else {
                     console.error(args.join(' '));
                 }
-            } else {
+            }
+            else {
                 Log.log.apply(this, args);
             }
         };
         Log.logIf = function (test) {
             var args = [];
-            for (var _i = 0; _i < (arguments.length - 1); _i++) {
-                args[_i] = arguments[_i + 1];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
             }
             if (test) {
                 Log.log.apply(this, [test].concat(args));
@@ -187,8 +222,8 @@ var illa;
         };
         Log.infoIf = function (test) {
             var args = [];
-            for (var _i = 0; _i < (arguments.length - 1); _i++) {
-                args[_i] = arguments[_i + 1];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
             }
             if (test) {
                 Log.info.apply(this, [test].concat(args));
@@ -196,8 +231,8 @@ var illa;
         };
         Log.warnIf = function (test) {
             var args = [];
-            for (var _i = 0; _i < (arguments.length - 1); _i++) {
-                args[_i] = arguments[_i + 1];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
             }
             if (test) {
                 Log.warn.apply(this, [test].concat(args));
@@ -205,8 +240,8 @@ var illa;
         };
         Log.errorIf = function (test) {
             var args = [];
-            for (var _i = 0; _i < (arguments.length - 1); _i++) {
-                args[_i] = arguments[_i + 1];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
             }
             if (test) {
                 Log.error.apply(this, [test].concat(args));
@@ -216,6 +251,84 @@ var illa;
     })();
     illa.Log = Log;
 })(illa || (illa = {}));
+/// <reference path='IAJAXSettingsBeforeSendFunction.ts'/>
+/// <reference path='IAJAXSettingsCompleteFunction.ts'/>
+/// <reference path='IAJAXSettingsContentsObject.ts'/>
+/// <reference path='IAJAXSettingsDataFilterFunction.ts'/>
+/// <reference path='IAJAXSettingsXHRFunction.ts'/>
+/// <reference path='IXHRDoneFunction.ts'/>
+/// <reference path='IXHRFailFunction.ts'/>
+/// <reference path='IAJAXTransportCompleteFunction.ts'/>
+/// <reference path='IAJAXTransportObject.ts'/>
+/// <reference path='ICSSHookObject.ts'/>
+/// <reference path='IEvent.ts'/>
+/// <reference path='IPromise.ts'/>
+/// <reference path='IPromise.ts'/>
+/// <reference path='IPromise.ts'/>
+/// <reference path='IAnimationOptions.ts'/>
+/// <reference path='ITween.ts'/>
+/// <reference path='IAnimationDoneFunction.ts'/>
+/// <reference path='IAnimationProgressFunction.ts'/>
+/// <reference path='IAnimationStartFunction.ts'/>
+/// <reference path='IAnimationStepFunction.ts'/>
+/// <reference path='ISpecialEasingObject.ts'/>
+/// <reference path='IPositionObject.ts'/>
+/// <reference path='IEvent.ts'/>
+/// <reference path='IEventHandler.ts'/>
+/// <reference path='IAddClassFunction.ts'/>
+/// <reference path='IAJAXCompleteFunction.ts'/>
+/// <reference path='IAJAXErrorFunction.ts'/>
+/// <reference path='IAJAXSuccessFunction.ts'/>
+/// <reference path='IAnimationOptions.ts'/>
+/// <reference path='IAppendFunction.ts'/>
+/// <reference path='IAttrFunction.ts'/>
+/// <reference path='IClassToggleFunction.ts'/>
+/// <reference path='ICSSFunction.ts'/>
+/// <reference path='ICSSObject.ts'/>
+/// <reference path='IEachFunction.ts'/>
+/// <reference path='IHTMLFunction.ts'/>
+/// <reference path='IIsFunction.ts'/>
+/// <reference path='ILoadCompleteFunction.ts'/>
+/// <reference path='IOffsetFunction.ts'/>
+/// <reference path='IOnEventsObject.ts'/>
+/// <reference path='IQueueCallbackFunction.ts'/>
+/// <reference path='IReplaceWithFunction.ts'/>
+/// <reference path='ISizeFunction.ts'/>
+/// <reference path='ITextFunction.ts'/>
+/// <reference path='IValFunction.ts'/>
+/// <reference path='IWidthFunction.ts'/>
+/// <reference path='IWrapFunction.ts'/>
+/// <reference path='IEventHandler.ts'/>
+/// <reference path='IEventHandler.ts'/>
+/// <reference path='IStaticEventSpecialHandleObject.ts'/>
+/// <reference path='IStaticEventSpecialSetupFunction.ts'/>
+/// <reference path='IStaticEventSpecialTeardownFunction.ts'/>
+/// <reference path='IStaticEventSpecialAddFunction.ts'/>
+/// <reference path='IStaticEventSpecialAddFunction.ts'/>
+/// <reference path='IEventHandler.ts'/>
+/// <reference path='IStaticEventSpecialObject.ts'/>
+/// <reference path='IStaticEventSpecial.ts'/>
+/// <reference path='IXHRAlwaysFunction.ts'/>
+/// <reference path='IXHRDoneFunction.ts'/>
+/// <reference path='IXHRFailFunction.ts'/>
+/// <reference path='IAJAXSettings.ts'/>
+/// <reference path='IAJAXPrefilterFunction.ts'/>
+/// <reference path='IAJAXTransportHandler.ts'/>
+/// <reference path='ICallbacks.ts'/>
+/// <reference path='ICSSHooksObject.ts'/>
+/// <reference path='IDeferred.ts'/>
+/// <reference path='IDeferredBeforeStartFunction.ts'/>
+/// <reference path='IEachFunction.ts'/>
+/// <reference path='IEachPropertyFunction.ts'/>
+/// <reference path='IEventConstructor.ts'/>
+/// <reference path='IFXObject.ts'/>
+/// <reference path='IGetSuccessFunction.ts'/>
+/// <reference path='IGrepFunction.ts'/>
+/// <reference path='IInstance.ts'/>
+/// <reference path='IMapFunction.ts'/>
+/// <reference path='IStaticEvent.ts'/>
+/// <reference path='IXHR.ts'/>
+/// <reference path='IEventCallback.ts'/>
 var illa;
 (function (illa) {
     var EventCallbackReg = (function () {
@@ -227,6 +340,9 @@ var illa;
     })();
     illa.EventCallbackReg = EventCallbackReg;
 })(illa || (illa = {}));
+/// <reference path='IEventCallback.ts'/>
+/// <reference path='EventCallbackReg.ts'/>
+/// <reference path='IEventHandler.ts'/>
 var illa;
 (function (illa) {
     var EventHandler = (function () {
@@ -239,21 +355,19 @@ var illa;
                 result = [];
             return result;
         };
-
         EventHandler.prototype.getEventParent = function () {
             return null;
         };
-
         EventHandler.prototype.addEventCallback = function (type, cb, thisObj) {
             var reg = new illa.EventCallbackReg(cb, thisObj);
             if (illa.isArray(this.callbacksByType[type])) {
                 this.removeEventCallback(type, cb, thisObj);
                 this.callbacksByType[type].push(reg);
-            } else {
+            }
+            else {
                 this.callbacksByType[type] = [reg];
             }
         };
-
         EventHandler.prototype.removeEventCallback = function (type, cb, thisObj) {
             var callbacks = this.callbacksByType[type];
             if (illa.isArray(callbacks)) {
@@ -266,7 +380,6 @@ var illa;
                 }
             }
         };
-
         EventHandler.prototype.removeAllEventCallbacks = function () {
             this.callbacksByType = {};
         };
@@ -274,6 +387,7 @@ var illa;
     })();
     illa.EventHandler = EventHandler;
 })(illa || (illa = {}));
+/// <reference path='IEventHandler.ts'/>
 var illa;
 (function (illa) {
     var Event = (function () {
@@ -286,7 +400,6 @@ var illa;
         Event.prototype.dispatch = function () {
             this.processHandler(this.target);
         };
-
         Event.prototype.processHandler = function (handler) {
             this.currentTarget = handler;
             var callbackRegs = handler.getCallbackRegsByType(this.type).slice(0);
@@ -302,31 +415,24 @@ var illa;
                     this.processHandler(parentHandler);
             }
         };
-
         Event.prototype.getType = function () {
             return this.type;
         };
-
         Event.prototype.getTarget = function () {
             return this.target;
         };
-
         Event.prototype.getCurrentTarget = function () {
             return this.currentTarget;
         };
-
         Event.prototype.setIsPropagationStopped = function (flag) {
             this.isPropagationStopped = flag;
         };
-
         Event.prototype.getIsPropagationStopped = function () {
             return this.isPropagationStopped;
         };
-
         Event.prototype.setStopImmediatePropagation = function (flag) {
             this.isImmediatePropagationStopped = flag;
         };
-
         Event.prototype.getIsImmediatePropagationStopped = function () {
             return this.isImmediatePropagationStopped;
         };
@@ -334,6 +440,7 @@ var illa;
     })();
     illa.Event = Event;
 })(illa || (illa = {}));
+/// <reference path='_module.ts'/>
 var illa;
 (function (illa) {
     var ObjectUtil = (function () {
@@ -348,7 +455,6 @@ var illa;
             }
             return result;
         };
-
         ObjectUtil.getKeyOfValue = function (obj, value) {
             for (var key in obj) {
                 if (obj.hasOwnProperty(key) && obj[key] === value) {
@@ -357,7 +463,6 @@ var illa;
             }
             return '';
         };
-
         ObjectUtil.getKeysOfValue = function (obj, value) {
             var result = [];
             for (var key in obj) {
@@ -375,8 +480,8 @@ var adat;
 (function (adat) {
     var IndexDescriptor = (function () {
         function IndexDescriptor(keyPath, isUnique, isMultiEntry) {
-            if (typeof isUnique === "undefined") { isUnique = false; }
-            if (typeof isMultiEntry === "undefined") { isMultiEntry = false; }
+            if (isUnique === void 0) { isUnique = false; }
+            if (isMultiEntry === void 0) { isMultiEntry = false; }
             this.keyPath = keyPath;
             this.isUnique = isUnique;
             this.isMultiEntry = isMultiEntry;
@@ -389,21 +494,16 @@ var adat;
                 objectStore.createIndex(name, this.getKeyPath(), { unique: this.getIsUnique(), multiEntry: this.getIsMultiEntry() });
             }
         };
-
         IndexDescriptor.prototype.removeFrom = function (objectStore, name) {
             objectStore.deleteIndex(name);
         };
-
         IndexDescriptor.prototype.getEquals = function (other) {
             var result = false;
-
             if (other instanceof IndexDescriptor && this.getKeyPath() === other.getKeyPath() && this.getIsUnique() === other.getIsUnique() && this.getIsMultiEntry() === other.getIsMultiEntry()) {
                 result = true;
             }
-
             return result;
         };
-
         IndexDescriptor.prototype.getKeyPath = function () {
             return this.keyPath;
         };
@@ -417,13 +517,15 @@ var adat;
     })();
     adat.IndexDescriptor = IndexDescriptor;
 })(adat || (adat = {}));
+/// <reference path='../../lib/illa/ObjectUtil.ts'/>
+/// <reference path='IndexDescriptor.ts'/>
 var adat;
 (function (adat) {
     var ObjectStoreDescriptor = (function () {
         function ObjectStoreDescriptor(keyPath, autoIncrement, indexDescriptors) {
-            if (typeof keyPath === "undefined") { keyPath = ''; }
-            if (typeof autoIncrement === "undefined") { autoIncrement = false; }
-            if (typeof indexDescriptors === "undefined") { indexDescriptors = {}; }
+            if (keyPath === void 0) { keyPath = ''; }
+            if (autoIncrement === void 0) { autoIncrement = false; }
+            if (indexDescriptors === void 0) { indexDescriptors = {}; }
             this.keyPath = keyPath;
             this.autoIncrement = autoIncrement;
             this.indexDescriptors = indexDescriptors;
@@ -431,51 +533,41 @@ var adat;
         ObjectStoreDescriptor.prototype.applyTo = function (transaction, database, name, prev) {
             if (prev && !this.getPropertiesEqual(prev)) {
                 var objectStore = transaction.objectStore(name);
-
                 this.applyIndexDescriptors(objectStore, prev);
-            } else {
+            }
+            else {
                 if (prev) {
                     prev.removeFrom(database, name);
                 }
                 var objectStore = database.createObjectStore(name, { keyPath: this.getKeyPath(), autoIncrement: this.getAutoIncrement() });
-
                 this.applyIndexDescriptors(objectStore, null);
             }
         };
-
         ObjectStoreDescriptor.prototype.removeFrom = function (database, name) {
             database.deleteObjectStore(name);
         };
-
         ObjectStoreDescriptor.prototype.getPropertiesEqual = function (other) {
             var result = false;
-
             if (other instanceof ObjectStoreDescriptor && this.getKeyPath() == other.getKeyPath() && this.getAutoIncrement() == other.getAutoIncrement()) {
                 result = true;
             }
-
             return result;
         };
-
         ObjectStoreDescriptor.prototype.applyIndexDescriptors = function (objectStore, prev) {
             for (var key in this.indexDescriptors) {
                 if (this.indexDescriptors.hasOwnProperty(key)) {
                     var newIndexD = this.indexDescriptors[key];
                     var prevIndexD = null;
-
                     if (prev && prev.indexDescriptors.hasOwnProperty(key)) {
                         prevIndexD = prev.indexDescriptors[key];
                     }
-
                     newIndexD.applyTo(objectStore, key, prevIndexD);
                 }
             }
-
             if (prev) {
                 for (var key in prev.indexDescriptors) {
                     if (prev.indexDescriptors.hasOwnProperty(key)) {
                         var prevIndexD = prev.indexDescriptors[key];
-
                         if (!this.indexDescriptors.hasOwnProperty(key)) {
                             prevIndexD.removeFrom(objectStore, key);
                         }
@@ -483,7 +575,6 @@ var adat;
                 }
             }
         };
-
         ObjectStoreDescriptor.prototype.getKeyPath = function () {
             return this.keyPath;
         };
@@ -497,6 +588,7 @@ var adat;
     })();
     adat.ObjectStoreDescriptor = ObjectStoreDescriptor;
 })(adat || (adat = {}));
+/// <reference path='ObjectStoreDescriptor.ts'/>
 var adat;
 (function (adat) {
     var VersionDescriptor = (function () {
@@ -520,7 +612,6 @@ var adat;
                 }
             }
         };
-
         VersionDescriptor.prototype.getObjectStoreDescriptors = function () {
             return this.objectStoreDescriptors;
         };
@@ -528,12 +619,15 @@ var adat;
     })();
     adat.VersionDescriptor = VersionDescriptor;
 })(adat || (adat = {}));
+/// <reference path='../../lib/illa/Event.ts'/>
+/// <reference path='../../lib/illa/EventHandler.ts'/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+/// <reference path='VersionDescriptor.ts'/>
 var adat;
 (function (adat) {
     var Database = (function (_super) {
@@ -547,18 +641,15 @@ var adat;
         Database.prototype.open = function () {
             if (!Database.isSupported()) {
                 illa.Log.warn(this.name, 'IndexedDB not supported.');
-
                 new illa.Event(Database.EVENT_NOT_SUPPORTED, this).dispatch();
                 return;
             }
-
             this.openRequest = indexedDB.open(this.getName(), this.getVersion());
             this.openRequest.onblocked = illa.bind(this.onBlocked, this);
             this.openRequest.onerror = illa.bind(this.onOpenError, this);
             this.openRequest.onupgradeneeded = illa.bind(this.onUpgradeNeeded, this);
             this.openRequest.onsuccess = illa.bind(this.onOpenSuccess, this);
         };
-
         Database.prototype.initDatabase = function () {
             if (!this.database) {
                 this.database = this.openRequest.result;
@@ -566,86 +657,65 @@ var adat;
                 this.database.onabort = illa.bind(this.onDatabaseAbort, this);
             }
         };
-
         Database.prototype.onBlocked = function (e) {
             illa.Log.warn(this.name, 'Database upgrade blocked, waiting for other instances...');
-
             new illa.Event(Database.EVENT_BLOCKED, this).dispatch();
         };
-
         Database.prototype.onOpenError = function (e) {
             illa.Log.error(this.name, 'Could not open database.');
-
             new illa.Event(Database.EVENT_OPEN_ERROR, this).dispatch();
         };
-
         Database.prototype.onUpgradeNeeded = function (e) {
             illa.Log.info(this.name, 'Upgrading database...');
-
             if (e.newVersion > this.getVersion()) {
                 throw this.name + ' Invalid database version: ' + e.newVersion;
             }
-
             var transaction = this.openRequest.transaction;
             transaction.onabort = illa.bind(this.onUpgradeTransactionAbort, this);
             transaction.onerror = illa.bind(this.onUpgradeTransactionError, this);
-
             this.initDatabase();
-
             for (var version = 1, n = this.versionDescriptors.length; version <= n; version++) {
                 var newVersion = this.getVersionDescriptor(version);
-
                 if (e.oldVersion < version) {
                     var prevVersion = version > 1 ? this.getVersionDescriptor(version - 1) : null;
-
                     newVersion.applyTo(transaction, this.database, prevVersion);
                 }
             }
         };
-
         Database.prototype.onOpenSuccess = function (e) {
             illa.Log.info(this.name, 'Database opened successfully.');
-
             this.isOpen = true;
             this.initDatabase();
-
             new illa.Event(Database.EVENT_OPEN_SUCCESS, this).dispatch();
         };
-
         Database.prototype.onUpgradeTransactionAbort = function (e) {
             illa.Log.warn(this.name, 'Aborted upgrade transaction.');
         };
-
         Database.prototype.onUpgradeTransactionError = function (e) {
             illa.Log.error(this.name, 'Upgrade transaction error:', e.message);
         };
-
         Database.prototype.onDatabaseError = function (e) {
             illa.Log.error(this.name, 'Database error:', e.message);
-
             new illa.Event(Database.EVENT_ERROR, this).dispatch();
         };
-
         Database.prototype.onDatabaseAbort = function (e) {
             illa.Log.warn(this.name, 'Aborted on database.');
-
             new illa.Event(Database.EVENT_ABORT, this).dispatch();
         };
-
         Database.isSupported = function () {
             return !!illa.GLOBAL.indexedDB;
         };
-
         Database.deleteDatabase = function (name) {
             if (this.isSupported()) {
                 indexedDB.deleteDatabase(name);
             }
         };
-
+        /**
+         * Helper for TypeScript 1.0.1, which has incorrect definition of IDBKeyRange.
+         */
         Database.getIDBKeyRange = function () {
             return illa.GLOBAL.IDBKeyRange;
         };
-
         Database.prototype.getName = function () {
             return this.name;
         };
@@ -685,11 +755,13 @@ var illa;
         ArrayUtil.indexOf = function (a, v, fromIndex) {
             if (Array.prototype.indexOf) {
                 return Array.prototype.indexOf.call(a, v, fromIndex);
-            } else {
+            }
+            else {
                 var length = a.length;
                 if (fromIndex == null) {
                     fromIndex = 0;
-                } else if (fromIndex < 0) {
+                }
+                else if (fromIndex < 0) {
                     fromIndex = Math.max(0, length + fromIndex);
                 }
                 for (var i = fromIndex; i < length; i++) {
@@ -700,7 +772,6 @@ var illa;
             }
             return -1;
         };
-
         ArrayUtil.removeFirst = function (a, v) {
             var i = this.indexOf(a, v);
             var removed = i >= 0;
@@ -709,7 +780,6 @@ var illa;
             }
             return removed;
         };
-
         ArrayUtil.removeAll = function (a, v) {
             var removed = false;
             for (var i = a.length - 1; i >= 0; i--) {
@@ -732,6 +802,9 @@ var adat;
     })(adat.TransactionMode || (adat.TransactionMode = {}));
     var TransactionMode = adat.TransactionMode;
 })(adat || (adat = {}));
+/// <reference path='../../lib/illa/ArrayUtil.ts'/>
+/// <reference path='../../lib/illa/EventHandler.ts'/>
+/// <reference path='TransactionMode.ts'/>
 var adat;
 (function (adat) {
     var Request = (function (_super) {
@@ -750,29 +823,23 @@ var adat;
         Request.prototype.getMode = function () {
             throw 'Unimplemented.';
         };
-
         Request.prototype.process = function (objectStore) {
             this.requests = this.processInternal(objectStore);
-
             for (var i = 0, n = this.requests.length; i < n; i++) {
                 var request = this.requests[i];
                 request.onerror = illa.bind(this.onError, this);
                 request.onsuccess = illa.bind(this.onSuccess, this);
             }
         };
-
         Request.prototype.onError = function (e) {
             illa.Log.error(this.name, this.getTypeName(), this.getIDBRequestID(e.target), e.message);
         };
-
         Request.prototype.onSuccess = function (e) {
             illa.Log.infoIf(this.name, this.getTypeName(), this.getIDBRequestID(e.target), 'Successful.');
         };
-
         Request.prototype.getIDBRequestID = function (request) {
             return illa.ArrayUtil.indexOf(this.requests, request);
         };
-
         Request.prototype.getObjectStoreDescriptor = function () {
             return this.objectStoreDescriptor;
         };
@@ -794,6 +861,10 @@ var adat;
     })(illa.EventHandler);
     adat.Request = Request;
 })(adat || (adat = {}));
+/// <reference path='../../lib/illa/EventHandler.ts'/>
+/// <reference path='Database.ts'/>
+/// <reference path='Request.ts'/>
+/// <reference path='TransactionMode.ts'/>
 var adat;
 (function (adat) {
     var Transaction = (function (_super) {
@@ -808,13 +879,13 @@ var adat;
         Transaction.prototype.process = function () {
             if (this.database.getIsOpen()) {
                 this.processInternal();
-            } else {
+            }
+            else {
                 this.database.open();
                 this.database.addEventCallback(adat.Database.EVENT_OPEN_SUCCESS, this.processInternal, this);
             }
             return this;
         };
-
         Transaction.prototype.processInternal = function () {
             if (!this.transaction) {
                 this.transaction = this.database.getIDBDatabase().transaction(this.getObjectStoreNames(), Transaction.getModeValue(this.getMode()));
@@ -822,18 +893,15 @@ var adat;
                 this.transaction.onerror = illa.bind(this.onError, this);
                 this.transaction.oncomplete = illa.bind(this.onComplete, this);
             }
-
             for (var i = 0, n = this.requests.length; i < n; i++) {
                 var request = this.requests[i];
                 var objectStoreName = illa.ObjectUtil.getKeyOfValue(this.database.getCurrentVersionDescriptor().getObjectStoreDescriptors(), request.getObjectStoreDescriptor());
                 request.process(this.transaction.objectStore(objectStoreName));
             }
         };
-
         Transaction.prototype.getObjectStoreNames = function () {
             var result = [];
             var osds = [];
-
             for (var i = 0, n = this.requests.length; i < n; i++) {
                 var osd = this.requests[i].getObjectStoreDescriptor();
                 if (illa.ArrayUtil.indexOf(osds, osd) == -1) {
@@ -841,18 +909,16 @@ var adat;
                     result.push(illa.ObjectUtil.getKeyOfValue(this.database.getCurrentVersionDescriptor().getObjectStoreDescriptors(), osd));
                 }
             }
-
             return result;
         };
-
         Transaction.prototype.getMode = function () {
             if (illa.isUndefinedOrNull(this.mode)) {
                 return this.getModeFromRequests();
-            } else {
+            }
+            else {
                 return this.mode;
             }
         };
-
         Transaction.prototype.getModeFromRequests = function () {
             var result = 0 /* READONLY */;
             for (var i = 0, n = this.requests.length; i < n; i++) {
@@ -864,7 +930,6 @@ var adat;
             }
             return result;
         };
-
         Transaction.getModeValue = function (mode) {
             switch (mode) {
                 case 0 /* READONLY */:
@@ -874,25 +939,18 @@ var adat;
             }
             return '';
         };
-
         Transaction.prototype.onAbort = function (e) {
             illa.Log.warn('Aborted transaction.');
-
             new illa.Event(Transaction.EVENT_ABORT, this).dispatch();
         };
-
         Transaction.prototype.onError = function (e) {
             illa.Log.error('Transaction error:', e.message);
-
             new illa.Event(Transaction.EVENT_ERROR, this).dispatch();
         };
-
         Transaction.prototype.onComplete = function (e) {
             illa.Log.infoIf(this.name, 'Transaction complete.');
-
             new illa.Event(Transaction.EVENT_COMPLETE, this).dispatch();
         };
-
         Transaction.prototype.getDatabase = function () {
             return this.database;
         };
@@ -920,6 +978,7 @@ var adat;
     })(illa.EventHandler);
     adat.Transaction = Transaction;
 })(adat || (adat = {}));
+/// <reference path='Request.ts'/>
 var adat;
 (function (adat) {
     var RequestAdd = (function (_super) {
@@ -932,7 +991,6 @@ var adat;
         RequestAdd.prototype.processInternal = function (objectStore) {
             return [objectStore.add(this.value, this.key)];
         };
-
         RequestAdd.prototype.getTypeName = function () {
             return 'Add';
         };
@@ -953,12 +1011,15 @@ var adat;
     })(adat.CursorDirection || (adat.CursorDirection = {}));
     var CursorDirection = adat.CursorDirection;
 })(adat || (adat = {}));
+/// <reference path='../../lib/illa/_module.ts'/>
+/// <reference path='CursorDirection.ts'/>
+/// <reference path='Request.ts'/>
 var adat;
 (function (adat) {
     var RequestCursor = (function (_super) {
         __extends(RequestCursor, _super);
         function RequestCursor(objectStoreDescriptor, onResult, range, direction) {
-            if (typeof direction === "undefined") { direction = 0 /* NEXT */; }
+            if (direction === void 0) { direction = 0 /* NEXT */; }
             _super.call(this, objectStoreDescriptor);
             this.onResult = onResult;
             this.range = range;
@@ -968,7 +1029,6 @@ var adat;
         RequestCursor.prototype.processInternal = function (objectStore) {
             return [objectStore.openCursor(this.range, adat.CursorDirection[this.direction].toLowerCase())];
         };
-
         RequestCursor.prototype.onSuccess = function (e) {
             var cursor = e.target.result;
             if (cursor) {
@@ -976,12 +1036,12 @@ var adat;
                     this.result.push(cursor.value);
                 }
                 cursor.continue();
-            } else {
+            }
+            else {
                 _super.prototype.onSuccess.call(this, e);
                 this.onResult(this.result);
             }
         };
-
         RequestCursor.prototype.getTypeName = function () {
             return 'Cursor';
         };
@@ -1010,6 +1070,13 @@ var test1;
     })();
     test1.SomeValue = SomeValue;
 })(test1 || (test1 = {}));
+/// <reference path='../../lib/illa/_module.ts'/>
+/// <reference path='../../lib/illa/Log.ts'/>
+/// <reference path='../../lib/jQuery.d.ts'/>
+/// <reference path='../../src/adat/Transaction.ts'/>
+/// <reference path='../../src/adat/RequestAdd.ts'/>
+/// <reference path='../../src/adat/RequestCursor.ts'/>
+/// <reference path='SomeValue.ts'/>
 var test1;
 (function (test1) {
     var Main = (function () {
@@ -1025,14 +1092,12 @@ var test1;
                         })
                     })
                 ]);
-
                 var addValues = new adat.Transaction(this.db, [
                     new adat.RequestAdd(this.someValues, new test1.SomeValue()).setName('addAValue'),
-                    new adat.RequestCursor(this.someValues, illa.bind(this.onSomeValuesRetrieved, this), adat.Database.getIDBKeyRange().bound(3, 5)).setName('readAllValues')
+                    new adat.RequestCursor(this.someValues, illa.bind(this.onSomeValuesRetrieved, this), IDBKeyRange.bound(3, 5)).setName('readAllValues')
                 ]).setName('addValues').process();
             }
         };
-
         Main.prototype.onSomeValuesRetrieved = function (values) {
             illa.Log.info('Values retrieved...');
             for (var i = 0; i < values.length; i++) {
